@@ -29,8 +29,17 @@ class SceneManager {
     this.controls.enableDamping = true;
 
     this.setupLights();
+    this.addObjects();
 
     window.addEventListener("resize", this.onWindowResize.bind(this));
+    this.animate();
+  }
+
+  private addObjects() {
+    const geometry = new THREE.BoxGeometry(1, 1, 1);
+    const material = new THREE.MeshStandardMaterial({ color: 0x00ff00 });
+    const cube = new THREE.Mesh(geometry, material);
+    this.scene.add(cube);
   }
 
   private setupLights() {
@@ -48,6 +57,12 @@ class SceneManager {
     this.camera.aspect = window.innerWidth / window.innerHeight;
     this.camera.updateProjectionMatrix();
     this.renderer.setSize(window.innerWidth, window.innerHeight);
+  }
+
+  private animate() {
+    requestAnimationFrame(this.animate.bind(this));
+    this.controls.update();
+    this.renderer.render(this.scene, this.camera);
   }
 }
 
