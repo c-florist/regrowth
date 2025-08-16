@@ -27,6 +27,19 @@ class SceneManager {
 
     this.controls = new OrbitControls(this.camera, this.renderer.domElement);
     this.controls.enableDamping = true;
+
+    this.setupLights();
+  }
+
+  private setupLights() {
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 2.5);
+    directionalLight.position.set(10, 15, 5);
+    directionalLight.castShadow = true;
+    directionalLight.shadow.mapSize = new THREE.Vector2(2048, 2048);
+    this.scene.add(directionalLight);
+
+    const ambientLight = new THREE.AmbientLight(0x404040, 1);
+    this.scene.add(ambientLight);
   }
 }
 
