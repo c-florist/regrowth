@@ -12,3 +12,4 @@ repos:
         name: 'pnpm run typecheck'
         entry: pnpm run typecheck
         files: ^src/
+        pass_filenames: false
