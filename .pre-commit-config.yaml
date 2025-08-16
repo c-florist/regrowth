@@ -1,0 +1,14 @@
+repos:
+  - repo: local
+    hooks:
+      - id: tidy
+        language: system
+        name: 'pnpm run tidy'
+        entry: pnpm run tidy
+        files: ^src/
+
+      - id: typecheck
+        language: system
+        name: 'pnpm run typecheck'
+        entry: pnpm run typecheck
+        files: ^src/
