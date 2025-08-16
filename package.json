@@ -6,7 +6,10 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "tidy": "biome check --write .",
+    "tidy:check": "biome check",
+    "typecheck": "tsc"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.2.0",
