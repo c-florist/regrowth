@@ -29,6 +29,8 @@ class SceneManager {
     this.controls.enableDamping = true;
 
     this.setupLights();
+
+    window.addEventListener("resize", this.onWindowResize.bind(this));
   }
 
   private setupLights() {
@@ -40,6 +42,12 @@ class SceneManager {
 
     const ambientLight = new THREE.AmbientLight(0x404040, 1);
     this.scene.add(ambientLight);
+  }
+
+  private onWindowResize() {
+    this.camera.aspect = window.innerWidth / window.innerHeight;
+    this.camera.updateProjectionMatrix();
+    this.renderer.setSize(window.innerWidth, window.innerHeight);
   }
 }
 
