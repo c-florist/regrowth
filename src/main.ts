@@ -1,16 +1,18 @@
 import "./style.css";
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/Addons.js";
+import { Concrete } from "./concrete";
 
 class SceneManager {
   private scene: THREE.Scene;
   private camera: THREE.PerspectiveCamera;
   private renderer: THREE.WebGLRenderer;
   private controls: OrbitControls;
+  private concreteStructure: THREE.Group;
 
   constructor() {
     this.scene = new THREE.Scene();
-    this.scene.background = new THREE.Color(0x222222);
+    this.scene.background = new THREE.Color(0x000000);
 
     this.camera = new THREE.PerspectiveCamera(
       75,
@@ -30,17 +32,13 @@ class SceneManager {
     this.controls.enableDamping = true;
 
     this.setupLights();
-    this.addObjects();
+
+    const concrete = new Concrete();
+    this.concreteStructure = concrete.generate();
+    this.scene.add(this.concreteStructure);
 
     window.addEventListener("resize", this.onWindowResize.bind(this));
     this.animate();
-  }
-
-  private addObjects() {
-    const geometry = new THREE.BoxGeometry(1, 1, 1);
-    const material = new THREE.MeshStandardMaterial({ color: 0x00ff00 });
-    const cube = new THREE.Mesh(geometry, material);
-    this.scene.add(cube);
   }
 
   private setupLights() {
