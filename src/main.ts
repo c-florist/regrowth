@@ -12,7 +12,7 @@ class SceneManager {
 
   constructor() {
     this.scene = new THREE.Scene();
-    this.scene.background = new THREE.Color(0x000000);
+    this.scene.background = new THREE.Color(0xcbcbcb);
 
     this.camera = new THREE.PerspectiveCamera(
       75,

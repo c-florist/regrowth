@@ -1,5 +1,7 @@
 import * as THREE from "three";
 
+const NUM_CONCRETE_TOWERS = 10;
+
 export class Concrete {
   private material: THREE.MeshStandardMaterial;
   private group: THREE.Group;
@@ -15,13 +17,13 @@ export class Concrete {
 
   generate() {
     const base = new THREE.Mesh(
-      new THREE.BoxGeometry(10, 1, 10),
+      new THREE.BoxGeometry(15, 1, 15),
       this.material,
     );
     base.receiveShadow = true;
     this.group.add(base);
 
-    for (let i = 0; i < 5; i++) {
+    for (let i = 0; i < NUM_CONCRETE_TOWERS; i++) {
       const width = Math.random() * 2 + 1;
       const height = Math.random() * 8 + 4;
       const depth = Math.random() * 2 + 1;
@@ -34,9 +36,9 @@ export class Concrete {
       tower.receiveShadow = true;
 
       tower.position.set(
-        (Math.random() - 0.5) * 8,
+        (Math.random() - 0.5) * 9,
         height / 2 + 0.5,
-        (Math.random() - 0.5) * 8,
+        (Math.random() - 0.5) * 9,
       );
 
       this.group.add(tower);
