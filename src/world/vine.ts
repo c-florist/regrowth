@@ -1,113 +1,161 @@
 import * as THREE from "three";
 import { LSystem } from "../systems/l-system";
 
+const VINE_RADIUS = 0.05;
+
 export class Vine {
+  mesh: THREE.Group;
+  isFinished = false;
+
   private objectsToIntersect: THREE.Object3D[];
   private lSystem: LSystem;
   private material: THREE.MeshBasicMaterial;
+  private sentence: string;
+  private growthIndex = 0;
 
-  constructor(objectsToIntersect: THREE.Object3D[]) {
-    this.objectsToIntersect = objectsToIntersect;
-    this.lSystem = new LSystem("F", new Map([["F", "F[+F]F[-F]F"]]));
-    this.material = new THREE.MeshBasicMaterial({ color: 0x17ac17 });
-  }
+  private points: THREE.Vector3[] = [];
+  private stateStack: {
+    pos: THREE.Vector3;
+    dir: THREE.Vector3;
+    normal: THREE.Vector3;
+  }[] = [];
 
-  grow(
+  private currentPos: THREE.Vector3;
+  private currentDir: THREE.Vector3;
+  private currentNormal: THREE.Vector3;
+
+  constructor(
+    objectsToIntersect: THREE.Object3D[],
     startPoint: THREE.Vector3,
     startNormal: THREE.Vector3,
-    iterations: number,
   ) {
-    this.lSystem.generate(iterations);
+    this.objectsToIntersect = objectsToIntersect;
+    this.lSystem = new LSystem("F", new Map([["F", "FF+-FF[F+]-FFF+F"]]));
+    this.lSystem.generate(4);
+    this.sentence = this.lSystem.sentence;
 
-    const raycaster = new THREE.Raycaster();
-    const points: THREE.Vector3[] = [];
-    const stateStack: {
-      pos: THREE.Vector3;
-      dir: THREE.Vector3;
-      normal: THREE.Vector3;
-    }[] = [];
+    this.material = new THREE.MeshBasicMaterial({ color: 0x17ac17 });
+    this.mesh = new THREE.Group();
 
-    let currentPos = startPoint.clone();
-    let currentNormal = startNormal.clone();
+    this.currentPos = startPoint.clone();
+    this.points.push(this.currentPos.clone());
+    this.currentNormal = startNormal.clone();
 
-    let currentDir = new THREE.Vector3();
+    this.currentDir = new THREE.Vector3();
     const arbitraryVec = new THREE.Vector3(0, 1, 0);
-    currentDir.crossVectors(startNormal, arbitraryVec).normalize();
+    this.currentDir.crossVectors(startNormal, arbitraryVec).normalize();
 
-    if (currentDir.lengthSq() < 0.001) {
+    if (this.currentDir.lengthSq() < 0.001) {
       arbitraryVec.set(1, 0, 0);
-      currentDir.crossVectors(startNormal, arbitraryVec).normalize();
+      this.currentDir.crossVectors(startNormal, arbitraryVec).normalize();
+    }
+  }
+
+  update() {
+    if (this.isFinished) {
+      return;
     }
 
-    for (const char of this.lSystem.sentence) {
-      switch (char) {
-        case "F": {
-          const moveDistance = 0.5;
-          const nextPos = currentPos
-            .clone()
-            .add(currentDir.clone().multiplyScalar(moveDistance));
+    const char = this.sentence[this.growthIndex];
 
-          raycaster.set(nextPos, currentNormal.clone().negate());
+    switch (char) {
+      case "F": {
+        const moveDistance = 0.5;
+        const nextPos = this.currentPos
+          .clone()
+          .add(this.currentDir.clone().multiplyScalar(moveDistance));
 
-          const intersects = raycaster.intersectObjects(
-            this.objectsToIntersect,
+        const raycaster = new THREE.Raycaster();
+        raycaster.set(nextPos, this.currentNormal.clone().negate());
+
+        const intersects = raycaster.intersectObjects(this.objectsToIntersect);
+
+        if (intersects.length > 0) {
+          const intersect = intersects[0];
+          if (!intersect) break;
+
+          const previousPoint = this.currentPos.clone();
+          this.currentPos = intersect.point;
+          this.points.push(this.currentPos.clone());
+
+          if (intersect.face) {
+            this.currentNormal = intersect.face.normal.clone();
+          }
+
+          this.addVineSegment(previousPoint, this.currentPos);
+
+          // Add a small random winding turn
+          const randomWindingAngle = (Math.random() - 0.5) * (Math.PI / 8);
+          this.currentDir.applyAxisAngle(
+            this.currentNormal,
+            randomWindingAngle,
           );
-
-          if (intersects.length > 0) {
-            const currentIntersect = intersects[0];
-            if (!currentIntersect) {
-              continue;
-            }
-
-            currentPos = currentIntersect.point;
-            points.push(currentPos.clone());
-            if (currentIntersect.face) {
-              currentNormal = currentIntersect.face.normal.clone();
-            }
-          }
-
-          break;
         }
-
-        case "+": {
-          currentDir.applyAxisAngle(currentNormal, -Math.PI / 4);
-          break;
+        break;
+      }
+      case "+": {
+        this.currentDir.applyAxisAngle(
+          this.currentNormal,
+          -(Math.PI / 8) * (Math.random() * 0.5 + 0.75),
+        );
+        break;
+      }
+      case "-": {
+        this.currentDir.applyAxisAngle(
+          this.currentNormal,
+          (Math.PI / 8) * (Math.random() * 0.5 + 0.75),
+        );
+        break;
+      }
+      case "[": {
+        this.stateStack.push({
+          pos: this.currentPos.clone(),
+          dir: this.currentDir.clone(),
+          normal: this.currentNormal.clone(),
+        });
+        break;
+      }
+      case "]": {
+        const state = this.stateStack.pop();
+        if (state) {
+          this.currentPos = state.pos;
+          this.currentDir = state.dir;
+          this.currentNormal = state.normal;
         }
-
-        case "-": {
-          currentDir.applyAxisAngle(currentNormal, Math.PI / 4);
-          break;
-        }
-
-        case "[": {
-          stateStack.push({
-            pos: currentPos.clone(),
-            dir: currentDir.clone(),
-            normal: currentNormal.clone(),
-          });
-          break;
-        }
-
-        case "]": {
-          const state = stateStack.pop();
-          if (state) {
-            currentPos = state.pos;
-            currentDir = state.dir;
-            currentNormal = state.normal;
-          }
-          break;
-        }
+        break;
       }
     }
 
-    if (points.length > 1) {
-      const curve = new THREE.CatmullRomCurve3(points);
-      const geometry = new THREE.TubeGeometry(curve, 64, 0.05, 8, false);
-      const vineMesh = new THREE.Mesh(geometry, this.material);
-
-      return vineMesh;
-    } else {
-      return null;
+    this.growthIndex++;
+    if (this.growthIndex >= this.sentence.length) {
+      this.isFinished = true;
     }
+  }
+
+  private addVineSegment(start: THREE.Vector3, end: THREE.Vector3) {
+    const distance = start.distanceTo(end);
+    if (distance < 0.01) return;
+
+    const geometry = new THREE.CylinderGeometry(
+      VINE_RADIUS,
+      VINE_RADIUS,
+      distance,
+      8,
+    );
+    const segment = new THREE.Mesh(geometry, this.material);
+
+    const midpoint = new THREE.Vector3()
+      .addVectors(start, end)
+      .multiplyScalar(0.5);
+    segment.position.copy(midpoint);
+
+    const direction = new THREE.Vector3().subVectors(end, start).normalize();
+    const quaternion = new THREE.Quaternion().setFromUnitVectors(
+      new THREE.Vector3(0, 1, 0),
+      direction,
+    );
+    segment.setRotationFromQuaternion(quaternion);
+
+    this.mesh.add(segment);
   }
 }

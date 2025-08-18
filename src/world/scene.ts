@@ -9,6 +9,7 @@ export class SceneManager {
   private renderer: THREE.WebGLRenderer;
   private controls: OrbitControls;
   private concreteStructure: THREE.Group;
+  private growingVines: Vine[] = [];
 
   constructor() {
     this.scene = new THREE.Scene();
@@ -64,23 +65,19 @@ export class SceneManager {
 
     if (intersects.length > 0) {
       const startIntersect = intersects[0];
-      if (!startIntersect) {
-        return;
-      }
+      if (!startIntersect) return;
 
       const startPoint = startIntersect.point;
       const startNormal = startIntersect.face?.normal;
-      if (!startNormal) {
-        return;
-      }
+      if (!startNormal) return;
 
-      const vine = new Vine(this.concreteStructure.children);
-      const vineGrowth = vine.grow(startPoint, startNormal, 4);
-      if (!vineGrowth) {
-        return;
-      }
-
-      this.scene.add(vineGrowth);
+      const vine = new Vine(
+        this.concreteStructure.children,
+        startPoint,
+        startNormal,
+      );
+      this.growingVines.push(vine);
+      this.scene.add(vine.mesh);
     }
   }
 
@@ -93,9 +90,15 @@ export class SceneManager {
   private animate() {
     requestAnimationFrame(this.animate.bind(this));
 
-    if (Math.random() > 0.95) {
+    if (Math.random() > 0.99) {
       this.spawnVine();
     }
+
+    for (const vine of this.growingVines) {
+      vine.update();
+    }
+
+    this.growingVines = this.growingVines.filter((vine) => !vine.isFinished);
 
     this.controls.update();
     this.renderer.render(this.scene, this.camera);
