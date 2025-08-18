@@ -12,6 +12,8 @@ export class Vine {
   private material: THREE.MeshBasicMaterial;
   private sentence: string;
   private growthIndex = 0;
+  private growthAccumulator = 0;
+  private growthSpeed = 20; // Segments per second
 
   private points: THREE.Vector3[] = [];
   private stateStack: {
@@ -51,84 +53,91 @@ export class Vine {
     }
   }
 
-  update() {
+  update(delta: number) {
     if (this.isFinished) {
       return;
     }
 
-    const char = this.sentence[this.growthIndex];
+    this.growthAccumulator += delta * this.growthSpeed;
 
-    switch (char) {
-      case "F": {
-        const moveDistance = 0.5;
-        const nextPos = this.currentPos
-          .clone()
-          .add(this.currentDir.clone().multiplyScalar(moveDistance));
+    while (this.growthAccumulator >= 1 && !this.isFinished) {
+      const char = this.sentence[this.growthIndex];
 
-        const raycaster = new THREE.Raycaster();
-        raycaster.set(nextPos, this.currentNormal.clone().negate());
+      switch (char) {
+        case "F": {
+          const moveDistance = 0.5;
+          const nextPos = this.currentPos
+            .clone()
+            .add(this.currentDir.clone().multiplyScalar(moveDistance));
 
-        const intersects = raycaster.intersectObjects(this.objectsToIntersect);
+          const raycaster = new THREE.Raycaster();
+          raycaster.set(nextPos, this.currentNormal.clone().negate());
 
-        if (intersects.length > 0) {
-          const intersect = intersects[0];
-          if (!intersect) break;
+          const intersects = raycaster.intersectObjects(
+            this.objectsToIntersect,
+          );
 
-          const previousPoint = this.currentPos.clone();
-          this.currentPos = intersect.point;
-          this.points.push(this.currentPos.clone());
+          if (intersects.length > 0) {
+            const intersect = intersects[0];
+            if (!intersect) break;
 
-          if (intersect.face) {
-            this.currentNormal = intersect.face.normal.clone();
+            const previousPoint = this.currentPos.clone();
+            this.currentPos = intersect.point;
+            this.points.push(this.currentPos.clone());
+
+            if (intersect.face) {
+              this.currentNormal = intersect.face.normal.clone();
+            }
+
+            this.addVineSegment(previousPoint, this.currentPos);
+
+            // Add a small random winding turn
+            const randomWindingAngle = (Math.random() - 0.5) * (Math.PI / 8);
+            this.currentDir.applyAxisAngle(
+              this.currentNormal,
+              randomWindingAngle,
+            );
           }
-
-          this.addVineSegment(previousPoint, this.currentPos);
-
-          // Add a small random winding turn
-          const randomWindingAngle = (Math.random() - 0.5) * (Math.PI / 8);
+          break;
+        }
+        case "+": {
           this.currentDir.applyAxisAngle(
             this.currentNormal,
-            randomWindingAngle,
+            -(Math.PI / 8) * (Math.random() * 0.5 + 0.75),
           );
+          break;
         }
-        break;
-      }
-      case "+": {
-        this.currentDir.applyAxisAngle(
-          this.currentNormal,
-          -(Math.PI / 8) * (Math.random() * 0.5 + 0.75),
-        );
-        break;
-      }
-      case "-": {
-        this.currentDir.applyAxisAngle(
-          this.currentNormal,
-          (Math.PI / 8) * (Math.random() * 0.5 + 0.75),
-        );
-        break;
-      }
-      case "[": {
-        this.stateStack.push({
-          pos: this.currentPos.clone(),
-          dir: this.currentDir.clone(),
-          normal: this.currentNormal.clone(),
-        });
-        break;
-      }
-      case "]": {
-        const state = this.stateStack.pop();
-        if (state) {
-          this.currentPos = state.pos;
-          this.currentDir = state.dir;
-          this.currentNormal = state.normal;
+        case "-": {
+          this.currentDir.applyAxisAngle(
+            this.currentNormal,
+            (Math.PI / 8) * (Math.random() * 0.5 + 0.75),
+          );
+          break;
         }
-        break;
+        case "[": {
+          this.stateStack.push({
+            pos: this.currentPos.clone(),
+            dir: this.currentDir.clone(),
+            normal: this.currentNormal.clone(),
+          });
+          break;
+        }
+        case "]": {
+          const state = this.stateStack.pop();
+          if (state) {
+            this.currentPos = state.pos;
+            this.currentDir = state.dir;
+            this.currentNormal = state.normal;
+          }
+          break;
+        }
       }
-    }
 
-    this.growthIndex++;
-    if (this.growthIndex >= this.sentence.length) {
-      this.isFinished = true;
+      this.growthIndex++;
+      if (this.growthIndex >= this.sentence.length) {
+        this.isFinished = true;
+      }
+      this.growthAccumulator -= 1;
     }
   }
 

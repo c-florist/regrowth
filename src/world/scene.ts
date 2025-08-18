@@ -10,10 +10,12 @@ export class SceneManager {
   private controls: OrbitControls;
   private concreteStructure: THREE.Group;
   private growingVines: Vine[] = [];
+  private clock: THREE.Clock;
 
   constructor() {
     this.scene = new THREE.Scene();
     this.scene.background = new THREE.Color(0xcbcbcb);
+    this.clock = new THREE.Clock();
 
     this.camera = new THREE.PerspectiveCamera(
       75,
@@ -116,13 +118,14 @@ export class SceneManager {
 
   private animate() {
     requestAnimationFrame(this.animate.bind(this));
+    const delta = this.clock.getDelta();
 
     if (Math.random() > 0.99) {
       this.spawnVine();
     }
 
     for (const vine of this.growingVines) {
-      vine.update();
+      vine.update(delta);
     }
 
     this.growingVines = this.growingVines.filter((vine) => !vine.isFinished);
