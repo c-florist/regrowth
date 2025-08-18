@@ -9,7 +9,8 @@
     "preview": "vite preview",
     "tidy": "biome check --write .",
     "tidy:check": "biome check",
-    "typecheck": "tsc"
+    "typecheck": "tsc",
+    "test": "vitest run"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.2.0",
