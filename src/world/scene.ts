@@ -37,9 +37,6 @@ export class SceneManager {
     this.concreteStructure = concrete.generate();
     this.scene.add(this.concreteStructure);
 
-    const vineGrowth = this.startVineGrowth();
-    this.scene.add(vineGrowth);
-
     window.addEventListener("resize", this.onWindowResize.bind(this));
     this.animate();
   }
@@ -55,9 +52,11 @@ export class SceneManager {
     this.scene.add(ambientLight);
   }
 
-  private startVineGrowth() {
+  private spawnVine() {
     const raycaster = new THREE.Raycaster();
-    raycaster.set(new THREE.Vector3(0, 20, 0), new THREE.Vector3(0, -1, 0));
+    const x = (Math.random() - 0.5) * 15;
+    const z = (Math.random() - 0.5) * 15;
+    raycaster.set(new THREE.Vector3(x, 20, z), new THREE.Vector3(0, -1, 0));
 
     const intersects = raycaster.intersectObjects(
       this.concreteStructure.children,
@@ -66,24 +65,22 @@ export class SceneManager {
     if (intersects.length > 0) {
       const startIntersect = intersects[0];
       if (!startIntersect) {
-        throw new Error("No starting intersection found");
+        return;
       }
 
       const startPoint = startIntersect.point;
       const startNormal = startIntersect.face?.normal;
       if (!startNormal) {
-        throw new Error("No starting normal found");
+        return;
       }
 
       const vine = new Vine(this.concreteStructure.children);
-      const vineGrowth = vine.grow(startPoint, startNormal, 10);
+      const vineGrowth = vine.grow(startPoint, startNormal, 4);
       if (!vineGrowth) {
-        throw new Error("Vine growth failed");
+        return;
       }
 
-      return vineGrowth;
-    } else {
-      throw new Error("No intersection found");
+      this.scene.add(vineGrowth);
     }
   }
 
@@ -95,6 +92,11 @@ export class SceneManager {
 
   private animate() {
     requestAnimationFrame(this.animate.bind(this));
+
+    if (Math.random() > 0.95) {
+      this.spawnVine();
+    }
+
     this.controls.update();
     this.renderer.render(this.scene, this.camera);
   }
