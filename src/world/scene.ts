@@ -55,9 +55,36 @@ export class SceneManager {
 
   private spawnVine() {
     const raycaster = new THREE.Raycaster();
-    const x = (Math.random() - 0.5) * 15;
-    const z = (Math.random() - 0.5) * 15;
-    raycaster.set(new THREE.Vector3(x, 20, z), new THREE.Vector3(0, -1, 0));
+    const side = Math.floor(Math.random() * 3); // 0: top, 1: side X, 2: side Z
+
+    switch (side) {
+      case 0: {
+        const x = (Math.random() - 0.5) * 15;
+        const z = (Math.random() - 0.5) * 15;
+        raycaster.set(new THREE.Vector3(x, 20, z), new THREE.Vector3(0, -1, 0));
+        break;
+      }
+      case 1: {
+        const y = Math.random() * 10;
+        const z = (Math.random() - 0.5) * 15;
+        const dir = Math.random() > 0.5 ? 1 : -1;
+        raycaster.set(
+          new THREE.Vector3(dir * 20, y, z),
+          new THREE.Vector3(-dir, 0, 0),
+        );
+        break;
+      }
+      case 2: {
+        const x = (Math.random() - 0.5) * 15;
+        const y = Math.random() * 10;
+        const dir = Math.random() > 0.5 ? 1 : -1;
+        raycaster.set(
+          new THREE.Vector3(x, y, dir * 20),
+          new THREE.Vector3(0, 0, -dir),
+        );
+        break;
+      }
+    }
 
     const intersects = raycaster.intersectObjects(
       this.concreteStructure.children,
