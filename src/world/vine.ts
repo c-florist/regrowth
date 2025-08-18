@@ -34,7 +34,7 @@ export class Vine {
     this.lSystem.generate(4);
     this.sentence = this.lSystem.sentence;
 
-    this.material = new THREE.MeshBasicMaterial({ color: 0x17ac17 });
+    this.material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
     this.mesh = new THREE.Group();
 
     this.currentPos = startPoint.clone();

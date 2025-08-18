@@ -44,12 +44,12 @@ export class SceneManager {
 
   private setupLights() {
     const directionalLight = new THREE.DirectionalLight(0xffffff, 2.5);
-    directionalLight.position.set(10, 15, 5);
+    directionalLight.position.set(15, 25, 10);
     directionalLight.castShadow = true;
-    directionalLight.shadow.mapSize = new THREE.Vector2(2048, 2048);
+    directionalLight.shadow.mapSize = new THREE.Vector2(4096, 4096);
     this.scene.add(directionalLight);
 
-    const ambientLight = new THREE.AmbientLight(0x404040, 1);
+    const ambientLight = new THREE.AmbientLight(0x404040, 0.8);
     this.scene.add(ambientLight);
   }
 

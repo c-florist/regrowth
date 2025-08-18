@@ -1,6 +1,6 @@
 import * as THREE from "three";
 
-const NUM_CONCRETE_TOWERS = 10;
+const NUM_CONCRETE_TOWERS = 20;
 
 export class Concrete {
   private material: THREE.MeshStandardMaterial;
@@ -8,7 +8,7 @@ export class Concrete {
 
   constructor() {
     this.material = new THREE.MeshStandardMaterial({
-      color: 0x8c8c8c,
+      color: 0x5a5a5a,
       roughness: 0.8,
       metalness: 0.1,
     });
