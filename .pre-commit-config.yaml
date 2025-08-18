@@ -13,3 +13,9 @@ repos:
         entry: pnpm run typecheck
         files: ^src/
         pass_filenames: false
+
+      - id: test
+        language: system
+        name: 'pnpm run test'
+        entry: pnpm run test
+        pass_filenames: false
