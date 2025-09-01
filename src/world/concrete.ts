@@ -8,7 +8,7 @@ export class Concrete {
 
   constructor() {
     this.material = new THREE.MeshStandardMaterial({
-      color: 0x5a5a5a,
+      color: 0x757575,
       roughness: 0.8,
       metalness: 0.1,
     });

@@ -2,6 +2,7 @@ import * as THREE from "three";
 import { LSystem } from "../systems/l-system";
 
 const VINE_RADIUS = 0.05;
+const VINE_COLOURS = [0x196f0b, 0x16541e, 0x033c35, 0x112740, 0x1a184f];
 
 export class Vine {
   mesh: THREE.Group;
@@ -36,7 +37,9 @@ export class Vine {
     this.lSystem.generate(4);
     this.sentence = this.lSystem.sentence;
 
-    this.material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+    const vineColour =
+      VINE_COLOURS[Math.floor(Math.random() * VINE_COLOURS.length)] ?? 0x196f0b;
+    this.material = new THREE.MeshBasicMaterial({ color: vineColour });
     this.mesh = new THREE.Group();
 
     this.currentPos = startPoint.clone();
