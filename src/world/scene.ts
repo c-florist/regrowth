@@ -23,7 +23,8 @@ export class SceneManager {
       0.1,
       1000,
     );
-    this.camera.position.z = 15;
+    this.camera.position.y = 8;
+    this.camera.position.z = 25;
 
     this.renderer = new THREE.WebGLRenderer({ antialias: true });
     this.renderer.setSize(window.innerWidth, window.innerHeight);
