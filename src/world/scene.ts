@@ -1,6 +1,6 @@
 import * as THREE from "three";
 import { Concrete } from "../world/concrete";
-import type { Tower } from "./tower";
+import { Tower } from "./tower";
 import { Vine } from "./vine";
 
 export class SceneManager {
@@ -149,7 +149,36 @@ export class SceneManager {
       vine.update(delta);
     }
 
+    for (const tower of this.towers) {
+      tower.update(delta);
+    }
+
     this.growingVines = this.growingVines.filter((vine) => !vine.isFinished);
+
+    const crumblingTowers = this.towers.filter((tower) => tower.isCrumbling);
+    for (const tower of crumblingTowers) {
+      if (tower.mesh.position.y < -10) {
+        this.scene.remove(tower.mesh);
+      }
+    }
+    this.towers = this.towers.filter(
+      (tower) => !tower.isCrumbling || tower.mesh.position.y > -10,
+    );
+
+    if (this.towers.length < 200) {
+      const width = Math.random() * 3 + 1;
+      const height = Math.random() * 15 + 2.2;
+      const depth = Math.random() * 3 + 1;
+      const position = new THREE.Vector3(
+        (Math.random() - 0.5) * 50,
+        height / 2,
+        (Math.random() - 0.5) * 50,
+      );
+
+      const tower = new Tower(position, width, height, depth);
+      this.towers.push(tower);
+      this.scene.add(tower.mesh);
+    }
 
     this.renderer.render(this.scene, this.camera);
   }
