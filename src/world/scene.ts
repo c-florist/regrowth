@@ -58,27 +58,27 @@ export class SceneManager {
 
     switch (side) {
       case 0: {
-        const x = (Math.random() - 0.5) * 15;
-        const z = (Math.random() - 0.5) * 15;
+        const x = (Math.random() - 0.5) * 50;
+        const z = (Math.random() - 0.5) * 50;
         raycaster.set(new THREE.Vector3(x, 20, z), new THREE.Vector3(0, -1, 0));
         break;
       }
       case 1: {
         const y = Math.random() * 10;
-        const z = (Math.random() - 0.5) * 15;
+        const z = (Math.random() - 0.5) * 50;
         const dir = Math.random() > 0.5 ? 1 : -1;
         raycaster.set(
-          new THREE.Vector3(dir * 20, y, z),
+          new THREE.Vector3(dir * 30, y, z),
           new THREE.Vector3(-dir, 0, 0),
         );
         break;
       }
       case 2: {
-        const x = (Math.random() - 0.5) * 15;
+        const x = (Math.random() - 0.5) * 50;
         const y = Math.random() * 10;
         const dir = Math.random() > 0.5 ? 1 : -1;
         raycaster.set(
-          new THREE.Vector3(x, y, dir * 20),
+          new THREE.Vector3(x, y, dir * 30),
           new THREE.Vector3(0, 0, -dir),
         );
         break;
