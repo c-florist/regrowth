@@ -1,5 +1,4 @@
 import * as THREE from "three";
-import { OrbitControls } from "three/examples/jsm/Addons.js";
 import { Concrete } from "../world/concrete";
 import { Vine } from "./vine";
 
@@ -7,7 +6,6 @@ export class SceneManager {
   private scene: THREE.Scene;
   private camera: THREE.PerspectiveCamera;
   private renderer: THREE.WebGLRenderer;
-  private controls: OrbitControls;
   private concreteStructure: THREE.Group;
   private growingVines: Vine[] = [];
   private clock: THREE.Clock;
@@ -23,17 +21,14 @@ export class SceneManager {
       0.1,
       1000,
     );
-    this.camera.position.y = 8;
-    this.camera.position.z = 25;
+    this.camera.position.y = 12;
+    this.camera.position.z = 20;
 
     this.renderer = new THREE.WebGLRenderer({ antialias: true });
     this.renderer.setSize(window.innerWidth, window.innerHeight);
     this.renderer.shadowMap.enabled = true;
     this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     document.body.appendChild(this.renderer.domElement);
-
-    this.controls = new OrbitControls(this.camera, this.renderer.domElement);
-    this.controls.enableDamping = true;
 
     this.setupLights();
 
@@ -131,7 +126,6 @@ export class SceneManager {
 
     this.growingVines = this.growingVines.filter((vine) => !vine.isFinished);
 
-    this.controls.update();
     this.renderer.render(this.scene, this.camera);
   }
 }
