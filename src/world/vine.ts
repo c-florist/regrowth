@@ -90,7 +90,6 @@ export class Vine {
             const intersect = intersects[0];
             if (!intersect) break;
 
-            // Prevent vines from jumping between buildings
             if (intersect.distance > moveDistance * 1.5) {
               break;
             }
@@ -105,7 +104,11 @@ export class Vine {
 
             this.addVineSegment(previousPoint, this.currentPos);
 
-            // Add a small random winding turn
+            const tower = intersect.object.userData["tower"];
+            if (tower) {
+              tower.addVineMass(0.1);
+            }
+
             const randomWindingAngle = (Math.random() - 0.5) * (Math.PI / 8);
             this.currentDir.applyAxisAngle(
               this.currentNormal,

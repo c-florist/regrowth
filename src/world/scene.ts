@@ -1,14 +1,16 @@
 import * as THREE from "three";
 import { Concrete } from "../world/concrete";
+import type { Tower } from "./tower";
 import { Vine } from "./vine";
 
 export class SceneManager {
   private scene: THREE.Scene;
   private camera: THREE.PerspectiveCamera;
   private renderer: THREE.WebGLRenderer;
-  private concreteStructure: THREE.Group;
+  private towers: Tower[] = [];
   private growingVines: Vine[] = [];
   private clock: THREE.Clock;
+  private groundPlane: THREE.Mesh;
 
   constructor() {
     this.scene = new THREE.Scene();
@@ -38,14 +40,14 @@ export class SceneManager {
       color: 0x5a5a5a,
       roughness: 0.9,
     });
-    const groundPlane = new THREE.Mesh(groundGeometry, groundMaterial);
-    groundPlane.rotation.x = -Math.PI / 2;
-    groundPlane.receiveShadow = true;
-    this.scene.add(groundPlane);
+    this.groundPlane = new THREE.Mesh(groundGeometry, groundMaterial);
+    this.groundPlane.rotation.x = -Math.PI / 2;
+    this.groundPlane.receiveShadow = true;
+    this.scene.add(this.groundPlane);
 
     const concrete = new Concrete();
-    this.concreteStructure = concrete.generate();
-    this.scene.add(this.concreteStructure);
+    this.towers = concrete.towers;
+    this.scene.add(...concrete.getMeshes());
 
     window.addEventListener("resize", this.onWindowResize.bind(this));
     this.animate();
@@ -63,18 +65,18 @@ export class SceneManager {
   }
 
   private spawnVine() {
-    if (this.concreteStructure.children.length === 0) {
+    if (this.towers.length === 0) {
       return;
     }
 
-    const tower = this.concreteStructure.children[
-      Math.floor(Math.random() * this.concreteStructure.children.length)
-    ] as THREE.Mesh;
+    const tower = this.towers[
+      Math.floor(Math.random() * this.towers.length)
+    ] as Tower;
     if (!tower) return;
 
     const raycaster = new THREE.Raycaster();
-    const towerPos = tower.position;
-    const towerGeo = tower.geometry as THREE.BoxGeometry;
+    const towerPos = tower.mesh.position;
+    const towerGeo = tower.mesh.geometry as THREE.BoxGeometry;
     const towerWidth = towerGeo.parameters.width;
     const towerHeight = towerGeo.parameters.height;
     const towerDepth = towerGeo.parameters.depth;
@@ -91,7 +93,7 @@ export class SceneManager {
         startPos.set(towerPos.x + towerWidth / 2 + 10, spawnHeight, towerPos.z);
         direction.set(-1, 0, 0);
         break;
-      case 1: // -X face
+      case 1:
         startPos.set(towerPos.x - towerWidth / 2 - 10, spawnHeight, towerPos.z);
         direction.set(1, 0, 0);
         break;
@@ -111,9 +113,11 @@ export class SceneManager {
 
     raycaster.set(startPos, direction);
 
-    const intersects = raycaster.intersectObjects(
-      this.concreteStructure.children,
-    );
+    const objectsToIntersect = [
+      ...this.towers.map((t) => t.mesh),
+      this.groundPlane,
+    ];
+    const intersects = raycaster.intersectObjects(objectsToIntersect);
 
     if (intersects.length > 0) {
       const startIntersect = intersects[0];
@@ -123,11 +127,7 @@ export class SceneManager {
       const startNormal = startIntersect.face?.normal;
       if (!startNormal) return;
 
-      const vine = new Vine(
-        this.concreteStructure.children,
-        startPoint,
-        startNormal,
-      );
+      const vine = new Vine(objectsToIntersect, startPoint, startNormal);
       this.growingVines.push(vine);
       this.scene.add(vine.mesh);
     }
