@@ -84,6 +84,11 @@ export class Vine {
             const intersect = intersects[0];
             if (!intersect) break;
 
+            // Prevent vines from jumping between buildings
+            if (intersect.distance > moveDistance * 1.5) {
+              break;
+            }
+
             const previousPoint = this.currentPos.clone();
             this.currentPos = intersect.point;
             this.points.push(this.currentPos.clone());
