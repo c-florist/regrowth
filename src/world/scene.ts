@@ -127,7 +127,7 @@ export class SceneManager {
       const startNormal = startIntersect.face?.normal;
       if (!startNormal) return;
 
-      const vine = new Vine(objectsToIntersect, startPoint, startNormal);
+      const vine = new Vine(objectsToIntersect, startPoint, startNormal, tower);
       this.growingVines.push(vine);
       this.scene.add(vine.mesh);
     }
@@ -159,6 +159,15 @@ export class SceneManager {
     for (const tower of crumblingTowers) {
       if (tower.mesh.position.y < -10) {
         this.scene.remove(tower.mesh);
+        const vinesToRemove = this.growingVines.filter(
+          (vine) => vine.tower === tower,
+        );
+        for (const vine of vinesToRemove) {
+          this.scene.remove(vine.mesh);
+        }
+        this.growingVines = this.growingVines.filter(
+          (vine) => vine.tower !== tower,
+        );
       }
     }
     this.towers = this.towers.filter(

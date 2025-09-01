@@ -1,5 +1,6 @@
 import * as THREE from "three";
 import { LSystem } from "../systems/l-system";
+import type { Tower } from "./tower";
 
 const VINE_RADIUS = 0.05;
 const VINE_COLOURS = [0x196f0b, 0x16541e, 0x033c35, 0x112740, 0x1a184f];
@@ -7,6 +8,7 @@ const VINE_COLOURS = [0x196f0b, 0x16541e, 0x033c35, 0x112740, 0x1a184f];
 export class Vine {
   mesh: THREE.Group;
   isFinished = false;
+  tower: Tower;
 
   private objectsToIntersect: THREE.Object3D[];
   private lSystem: LSystem;
@@ -31,8 +33,10 @@ export class Vine {
     objectsToIntersect: THREE.Object3D[],
     startPoint: THREE.Vector3,
     startNormal: THREE.Vector3,
+    tower: Tower,
   ) {
     this.objectsToIntersect = objectsToIntersect;
+    this.tower = tower;
     this.lSystem = new LSystem("F", new Map([["F", "FF+-FF[F+]-FFF+F"]]));
     this.lSystem.generate(4);
     this.sentence = this.lSystem.sentence;
@@ -106,7 +110,7 @@ export class Vine {
 
             const tower = intersect.object.userData["tower"];
             if (tower) {
-              tower.addVineMass(0.1);
+              tower.addVineMass(0.01);
             }
 
             const randomWindingAngle = (Math.random() - 0.5) * (Math.PI / 8);
