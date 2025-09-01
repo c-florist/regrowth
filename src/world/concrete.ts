@@ -20,7 +20,7 @@ export class Concrete {
   generate() {
     for (let i = 0; i < NUM_CONCRETE_TOWERS; i++) {
       const width = Math.random() * 3 + 1;
-      const height = Math.random() * 15 + 5;
+      const height = Math.random() * 15 + 2.2;
       const depth = Math.random() * 3 + 1;
 
       const tower = new THREE.Mesh(
