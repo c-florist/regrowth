@@ -46,13 +46,19 @@ export class Vine {
     this.points.push(this.currentPos.clone());
     this.currentNormal = startNormal.clone();
 
-    this.currentDir = new THREE.Vector3();
-    const arbitraryVec = new THREE.Vector3(0, 1, 0);
-    this.currentDir.crossVectors(startNormal, arbitraryVec).normalize();
+    const worldUp = new THREE.Vector3(0, 1, 0);
+    // Project worldUp onto the plane defined by startNormal
+    const dot = worldUp.dot(startNormal);
+    const projectedUp = worldUp
+      .clone()
+      .sub(startNormal.clone().multiplyScalar(dot));
+    projectedUp.normalize();
 
-    if (this.currentDir.lengthSq() < 0.001) {
-      arbitraryVec.set(1, 0, 0);
-      this.currentDir.crossVectors(startNormal, arbitraryVec).normalize();
+    // If the result is a zero vector (because the normal was vertical), pick a default direction.
+    if (projectedUp.lengthSq() < 0.001) {
+      this.currentDir = new THREE.Vector3(1, 0, 0);
+    } else {
+      this.currentDir = projectedUp;
     }
   }
 

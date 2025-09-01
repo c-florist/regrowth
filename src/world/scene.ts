@@ -63,37 +63,53 @@ export class SceneManager {
   }
 
   private spawnVine() {
-    const raycaster = new THREE.Raycaster();
-    const side = Math.floor(Math.random() * 3); // 0: top, 1: side X, 2: side Z
-
-    switch (side) {
-      case 0: {
-        const x = (Math.random() - 0.5) * 50;
-        const z = (Math.random() - 0.5) * 50;
-        raycaster.set(new THREE.Vector3(x, 20, z), new THREE.Vector3(0, -1, 0));
-        break;
-      }
-      case 1: {
-        const y = Math.random() * 10;
-        const z = (Math.random() - 0.5) * 50;
-        const dir = Math.random() > 0.5 ? 1 : -1;
-        raycaster.set(
-          new THREE.Vector3(dir * 30, y, z),
-          new THREE.Vector3(-dir, 0, 0),
-        );
-        break;
-      }
-      case 2: {
-        const x = (Math.random() - 0.5) * 50;
-        const y = Math.random() * 10;
-        const dir = Math.random() > 0.5 ? 1 : -1;
-        raycaster.set(
-          new THREE.Vector3(x, y, dir * 30),
-          new THREE.Vector3(0, 0, -dir),
-        );
-        break;
-      }
+    if (this.concreteStructure.children.length === 0) {
+      return;
     }
+
+    const tower = this.concreteStructure.children[
+      Math.floor(Math.random() * this.concreteStructure.children.length)
+    ] as THREE.Mesh;
+    if (!tower) return;
+
+    const raycaster = new THREE.Raycaster();
+    const towerPos = tower.position;
+    const towerGeo = tower.geometry as THREE.BoxGeometry;
+    const towerWidth = towerGeo.parameters.width;
+    const towerHeight = towerGeo.parameters.height;
+    const towerDepth = towerGeo.parameters.depth;
+
+    const side = Math.floor(Math.random() * 5);
+    const startPos = new THREE.Vector3();
+    const direction = new THREE.Vector3();
+
+    const spawnHeight = Math.random() * 2 + 0.5;
+
+    // 0: +X, 1: -X, 2: +Z, 3: -Z, 4: Top
+    switch (side) {
+      case 0:
+        startPos.set(towerPos.x + towerWidth / 2 + 10, spawnHeight, towerPos.z);
+        direction.set(-1, 0, 0);
+        break;
+      case 1: // -X face
+        startPos.set(towerPos.x - towerWidth / 2 - 10, spawnHeight, towerPos.z);
+        direction.set(1, 0, 0);
+        break;
+      case 2:
+        startPos.set(towerPos.x, spawnHeight, towerPos.z + towerDepth / 2 + 10);
+        direction.set(0, 0, -1);
+        break;
+      case 3:
+        startPos.set(towerPos.x, spawnHeight, towerPos.z - towerDepth / 2 - 10);
+        direction.set(0, 0, 1);
+        break;
+      case 4:
+        startPos.set(towerPos.x, towerPos.y + towerHeight / 2 + 10, towerPos.z);
+        direction.set(0, -1, 0);
+        break;
+    }
+
+    raycaster.set(startPos, direction);
 
     const intersects = raycaster.intersectObjects(
       this.concreteStructure.children,
