@@ -33,6 +33,16 @@ export class SceneManager {
 
     this.setupLights();
 
+    const groundGeometry = new THREE.PlaneGeometry(100, 100);
+    const groundMaterial = new THREE.MeshStandardMaterial({
+      color: 0x5a5a5a,
+      roughness: 0.9,
+    });
+    const groundPlane = new THREE.Mesh(groundGeometry, groundMaterial);
+    groundPlane.rotation.x = -Math.PI / 2;
+    groundPlane.receiveShadow = true;
+    this.scene.add(groundPlane);
+
     const concrete = new Concrete();
     this.concreteStructure = concrete.generate();
     this.scene.add(this.concreteStructure);
@@ -117,9 +127,7 @@ export class SceneManager {
     requestAnimationFrame(this.animate.bind(this));
     const delta = this.clock.getDelta();
 
-    if (Math.random() > 0.99) {
-      this.spawnVine();
-    }
+    this.spawnVine();
 
     for (const vine of this.growingVines) {
       vine.update(delta);
